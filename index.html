@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HCCDP Exam Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --border: #E4E0D8;
+    --text: #1A1814;
+    --muted: #8C8880;
+    --accent: #2B5C3F;
+    --accent-light: #EBF3EE;
+    --correct: #2B5C3F;
+    --wrong: #B84040;
+    --correct-bg: #EBF3EE;
+    --wrong-bg: #FBF0F0;
+    --radius: 10px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .shell {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Wordmark ── */
+  .wordmark {
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 56px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wordmark span { color: var(--accent); font-style: italic; }
+
+  /* ── Upload Page ── */
+  .headline {
+    font-family: 'Lora', serif;
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  .subline {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    max-width: 440px;
+  }
+
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 52px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--surface);
+    margin-bottom: 8px;
+  }
+  .drop-zone:hover, .drop-zone.over { border-color: var(--accent); background: var(--accent-light); }
+  .drop-zone.has-file { border-style: solid; border-color: var(--accent); background: var(--accent-light); }
+  .drop-icon { font-size: 32px; margin-bottom: 14px; opacity: 0.55; }
+  .drop-title { font-family: 'Lora', serif; font-size: 17px; color: var(--text); margin-bottom: 6px; }
+  .drop-sub { font-size: 12px; color: var(--muted); }
+  .file-name { font-size: 13px; color: var(--accent); font-weight: 500; margin-top: 6px; }
+
+  /* ── Question count ── */
+  .config-row {
+    margin-top: 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .config-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .count-picker {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .count-btn {
+    padding: 9px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .count-btn:last-child { border-right: none; }
+  .count-btn.active, .count-btn:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .count-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .count-input {
+    width: 72px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+  .count-input:focus { border-color: var(--accent); }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    display: inline-block;
+    padding: 13px 32px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: opacity 0.2s;
+    margin-top: 32px;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 11px 24px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-outline {
+    display: inline-block;
+    padding: 11px 24px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-outline:hover { background: var(--accent-light); }
+
+  /* ── Error ── */
+  .error-msg {
+    background: var(--wrong-bg);
+    border: 1px solid #E8C0C0;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--wrong);
+    margin-top: 16px;
+    display: none;
+  }
+
+  /* ── Loading ── */
+  #page-loading { text-align: center; }
+  #page-loading .shell { padding-top: 120px; }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .loading-sub { font-size: 13px; color: var(--muted); }
+
+  /* ── Quiz page ── */
+  .quiz-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .quiz-progress-text { font-size: 12px; color: var(--muted); }
+  .progress-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 36px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .q-type-tag {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .q-type-tag.single { background: #EEF2FB; color: #4466BB; }
+  .q-type-tag.multi { background: var(--accent-light); color: var(--accent); }
+
+  .q-text {
+    font-family: 'Lora', serif;
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    background: var(--surface);
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .option:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
+  .option.selected { border-color: var(--accent); background: var(--accent-light); }
+  .option.correct { border-color: var(--correct); background: var(--correct-bg); }
+  .option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+  .option.dim { opacity: 0.45; }
+  .option:disabled { cursor: default; }
+
+  .opt-letter {
+    width: 26px; height: 26px; min-width: 26px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s;
+    background: transparent;
+  }
+  .option.selected .opt-letter { border-color: var(--accent); color: var(--accent); background: #fff; }
+  .option.correct .opt-letter { border-color: var(--correct); color: #fff; background: var(--correct); }
+  .option.wrong .opt-letter { border-color: var(--wrong); color: #fff; background: var(--wrong); }
+
+  .opt-text { font-size: 14px; line-height: 1.55; color: var(--text); padding-top: 2px; }
+
+  /* Explanation box */
+  .explanation {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    display: none;
+    font-family: 'Lora', serif;
+    font-style: italic;
+  }
+  .explanation.correct-exp { background: var(--correct-bg); border-left: 3px solid var(--correct); }
+  .explanation.wrong-exp { background: var(--wrong-bg); border-left: 3px solid var(--wrong); }
+  .explanation .exp-header { font-style: normal; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .explanation.correct-exp .exp-header { color: var(--correct); }
+  .explanation.wrong-exp .exp-header { color: var(--wrong); }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+  }
+
+  /* Dot nav */
+  .dot-nav { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .dot.active { background: var(--accent); transform: scale(1.3); }
+  .dot.answered-correct { background: var(--correct); }
+  .dot.answered-wrong { background: var(--wrong); }
+
+  /* ── Score bar ── */
+  .live-score {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* ── Results page ── */
+  .results-hero {
+    text-align: center;
+    padding: 48px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  .big-pct {
+    font-family: 'Lora', serif;
+    font-size: 72px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .big-pct.pass { color: var(--correct); }
+  .big-pct.fail { color: var(--wrong); }
+  .result-verdict {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .stat-num { font-family: 'Lora', serif; font-size: 28px; font-weight: 600; }
+  .stat-num.c { color: var(--correct); }
+  .stat-num.w { color: var(--wrong); }
+  .stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+  .review-section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 16px;
+  }
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 12px;
+  }
+  .review-item.r-correct { border-left: 3px solid var(--correct); }
+  .review-item.r-wrong { border-left: 3px solid var(--wrong); }
+  .review-q { font-family: 'Lora', serif; font-size: 15px; line-height: 1.55; margin-bottom: 10px; }
+  .review-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .review-meta span.correct-ans { color: var(--correct); font-weight: 500; }
+  .review-meta span.wrong-ans { color: var(--wrong); font-weight: 500; }
+  .review-exp { font-size: 13px; font-family: 'Lora', serif; font-style: italic; color: #555; line-height: 1.65; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+
+  .results-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 500px) {
+    .headline { font-size: 26px; }
+    .q-text { font-size: 16px; }
+    .big-pct { font-size: 54px; }
+    .stats-row { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ UPLOAD PAGE ══════════════ -->
+<div id="page-upload" class="page active">
+  <div class="shell">
+    <div class="wordmark">HCCDP Practice &nbsp;·&nbsp; <span>Solutions Architecture</span></div>
+
+    <h1 class="headline">Upload a source,<br>get a custom exam.</h1>
+    <p class="subline">Drop any PDF, text, or Markdown study material. The engine reads it and builds a fresh set of single and multiple-choice questions, every time.</p>
+
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-icon">↑</div>
+      <div class="drop-title">Drop your file here</div>
+      <div class="drop-sub">PDF, TXT, or Markdown — or click to browse</div>
+      <div class="file-name" id="fileName"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".pdf,.txt,.md" style="display:none" />
+
+    <div class="config-row">
+      <div>
+        <div class="config-label">Number of questions</div>
+        <div class="count-picker" id="countPicker">
+          <button class="count-btn" data-n="5">5</button>
+          <button class="count-btn active" data-n="10">10</button>
+          <button class="count-btn" data-n="15">15</button>
+          <button class="count-btn" data-n="20">20</button>
+        </div>
+      </div>
+      <div>
+        <div class="config-label">Custom number</div>
+        <div class="count-custom">
+          <input type="number" class="count-input" id="customCount" placeholder="e.g. 25" min="3" max="50" />
+        </div>
+      </div>
+    </div>
+
+    <div id="errorMsg" class="error-msg"></div>
+
+    <button class="btn-primary" id="generateBtn" disabled>Generate Quiz</button>
+  </div>
+</div>
+
+<!-- ══════════════ LOADING PAGE ══════════════ -->
+<div id="page-loading" class="page">
+  <div class="shell">
+    <div class="spinner"></div>
+    <div class="loading-title">Reading your material…</div>
+    <div class="loading-sub" id="loadingSub">Generating questions</div>
+  </div>
+</div>
+
+<!-- ══════════════ QUIZ PAGE ══════════════ -->
+<div id="page-quiz" class="page">
+  <div class="shell">
+    <div class="quiz-top">
+      <div class="wordmark" style="margin-bottom:0">HCCDP Practice</div>
+      <button class="btn-ghost" onclick="resetToUpload()">← New quiz</button>
+    </div>
+
+    <div class="live-score" id="liveScore"></div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="quiz-progress-text" id="progressText" style="margin-top:-28px; margin-bottom:28px;"></div>
+
+    <div id="qTypeTag" class="q-type-tag"></div>
+    <div id="qText" class="q-text"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div id="explanationBox" class="explanation"></div>
+
+    <div class="quiz-nav">
+      <button class="btn-ghost" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+      <div class="dot-nav" id="dotNav"></div>
+      <button class="btn-ghost" id="nextBtn" onclick="navigate(1)">Next →</button>
+    </div>
+
+    <div style="text-align:center; margin-top:32px;">
+      <button class="btn-primary" id="submitBtn" onclick="submitAnswer()" style="display:none;">Confirm Answer</button>
+      <button class="btn-primary" id="finishBtn" onclick="showResults()" style="display:none;">See Results</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS PAGE ══════════════ -->
+<div id="page-results" class="page">
+  <div class="shell">
+    <div class="wordmark" style="margin-bottom:32px;">HCCDP Practice &nbsp;·&nbsp; <span>Results</span></div>
+
+    <div class="results-hero">
+      <div class="big-pct" id="bigPct"></div>
+      <div class="result-verdict" id="resultVerdict"></div>
+      <div class="stats-row">
+        <div><div class="stat-num c" id="statCorrect"></div><div class="stat-lbl">Correct</div></div>
+        <div><div class="stat-num w" id="statWrong"></div><div class="stat-lbl">Incorrect</div></div>
+        <div><div class="stat-num" id="statTotal"></div><div class="stat-lbl">Questions</div></div>
+      </div>
+    </div>
+
+    <div class="review-section-title">Question Review</div>
+    <div id="reviewList"></div>
+
+    <div class="results-actions">
+      <button class="btn-primary" onclick="resetToUpload()">Upload new source</button>
+      <button class="btn-outline" onclick="retakeQuiz()">Retake this quiz</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://api.anthropic.com/v1/messages";
+
+let state = {
+  file: null,
+  numQuestions: 10,
+  questions: [],
+  current: 0,
+  answers: {},   // index -> [letters]
+  submitted: {}  // index -> true
+};
+
+// ── Page routing ──
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── File handling ──
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+function setFile(f) {
+  state.file = f;
+  dropZone.classList.add('has-file');
+  document.getElementById('fileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
+  document.getElementById('dropZone').querySelector('.drop-title').textContent = 'File loaded';
+  document.getElementById('generateBtn').disabled = false;
+  hideError();
+}
+
+// ── Question count ──
+document.getElementById('countPicker').addEventListener('click', e => {
+  const btn = e.target.closest('.count-btn');
+  if (!btn) return;
+  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.numQuestions = parseInt(btn.dataset.n);
+  document.getElementById('customCount').value = '';
+});
+
+document.getElementById('customCount').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  if (v >= 3 && v <= 50) {
+    state.numQuestions = v;
+    document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+  }
+});
+
+// ── Generate ──
+document.getElementById('generateBtn').addEventListener('click', generateQuiz);
+
+async function generateQuiz() {
+  if (!state.file) return;
+  hideError();
+  show('loading');
+  document.getElementById('loadingSub').textContent = 'Generating ' + state.numQuestions + ' questions from ' + state.file.name;
+
+  try {
+    const base64 = await toBase64(state.file);
+    const isPDF = state.file.type === 'application/pdf';
+    const isImage = state.file.type.startsWith('image/');
+
+    let content;
+    if (isPDF) {
+      content = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+        { type: 'text', text: buildPrompt(state.numQuestions) }
+      ];
+    } else if (isImage) {
+      content = [
+        { type: 'image', source: { type: 'base64', media_type: state.file.type, data: base64 } },
+        { type: 'text', text: buildPrompt(state.numQuestions) }
+      ];
+    } else {
+      const text = atob(base64);
+      content = [{ type: 'text', text: 'STUDY MATERIAL:\n\n' + text + '\n\n' + buildPrompt(state.numQuestions) }];
+    }
+
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = (data.content || []).map(b => b.text || '').join('');
+    const questions = parseJSON(raw);
+    if (!questions.length) throw new Error('Could not parse questions. Please try again.');
+
+    state.questions = questions;
+    state.answers = {};
+    state.submitted = {};
+    state.current = 0;
+    renderQuiz();
+    show('quiz');
+  } catch (err) {
+    show('upload');
+    showError(err.message || 'Something went wrong. Please try again.');
+  }
+}
+
+function buildPrompt(n) {
+  return `You are a senior HCCDP Solutions Architecture exam question writer.
+
+Based ONLY on the material above, generate exactly ${n} high-quality exam questions.
+
+Mix:
+- ~60% single-choice (1 correct answer)
+- ~40% multiple-choice (2–3 correct answers)
+
+Return ONLY a raw JSON array — no markdown, no preamble, no explanation outside JSON.
+
+Schema:
+[
+  {
+    "id": 1,
+    "type": "single",
+    "question": "...",
+    "options": [
+      {"letter":"A","text":"..."},
+      {"letter":"B","text":"..."},
+      {"letter":"C","text":"..."},
+      {"letter":"D","text":"..."}
+    ],
+    "correct": ["B"],
+    "explanation": "B is correct because... A is wrong because... etc."
+  }
+]
+
+Rules:
+- Exactly 4 options per question (A–D)
+- "correct" is always an array of letter strings
+- Single: 1 correct. Multiple: 2–3 correct
+- Explanations must explain why each wrong option is incorrect too
+- Questions must reflect realistic HCCDP exam difficulty
+- Return ONLY the JSON array`;
+}
+
+// ── Quiz rendering ──
+function renderQuiz() {
+  const q = state.questions[state.current];
+  const total = state.questions.length;
+  const answered = Object.keys(state.submitted).length;
+
+  // Progress
+  const pct = ((state.current + 1) / total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = 'Question ' + (state.current + 1) + ' of ' + total;
+
+  // Live score
+  const correct = Object.keys(state.submitted).filter(i => isCorrectAnswer(parseInt(i))).length;
+  document.getElementById('liveScore').textContent = answered > 0
+    ? correct + ' correct out of ' + answered + ' answered'
+    : '';
+
+  // Type tag
+  const tag = document.getElementById('qTypeTag');
+  tag.textContent = q.type === 'single' ? 'Single choice' : 'Multiple choice — select all that apply';
+  tag.className = 'q-type-tag ' + q.type;
+
+  // Question text
+  document.getElementById('qText').textContent = q.question;
+
+  // Options
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const userAns = state.answers[state.current] || [];
+  const isSubmitted = !!state.submitted[state.current];
+
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.disabled = isSubmitted;
+
+    const isSelected = userAns.includes(opt.letter);
+    const isCorrectOpt = q.correct.includes(opt.letter);
+
+    if (isSubmitted) {
+      if (isCorrectOpt) btn.classList.add('correct');
+      else if (isSelected && !isCorrectOpt) btn.classList.add('wrong');
+      else btn.classList.add('dim');
+    } else if (isSelected) {
+      btn.classList.add('selected');
+    }
+
+    btn.innerHTML = `<div class="opt-letter">${opt.letter}</div><div class="opt-text">${opt.text}</div>`;
+    if (!isSubmitted) btn.addEventListener('click', () => toggleOption(opt.letter));
+    container.appendChild(btn);
+  });
+
+  // Explanation
+  const expBox = document.getElementById('explanationBox');
+  if (isSubmitted) {
+    const correct2 = isCorrectAnswer(state.current);
+    expBox.style.display = 'block';
+    expBox.className = 'explanation ' + (correct2 ? 'correct-exp' : 'wrong-exp');
+    expBox.innerHTML = `<div class="exp-header">${correct2 ? '✓ Correct' : '✗ Incorrect — correct answer: ' + q.correct.join(', ')}</div>${q.explanation}`;
+  } else {
+    expBox.style.display = 'none';
+    expBox.innerHTML = '';
+  }
+
+  // Dots
+  const dotNav = document.getElementById('dotNav');
+  dotNav.innerHTML = '';
+  state.questions.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot';
+    if (i === state.current) d.classList.add('active');
+    else if (state.submitted[i]) {
+      d.classList.add(isCorrectAnswer(i) ? 'answered-correct' : 'answered-wrong');
+    }
+    d.addEventListener('click', () => { state.current = i; renderQuiz(); });
+    dotNav.appendChild(d);
+  });
+
+  // Buttons
+  const submitBtn = document.getElementById('submitBtn');
+  const finishBtn = document.getElementById('finishBtn');
+  const allDone = state.questions.every((_, i) => state.submitted[i]);
+
+  if (!isSubmitted) {
+    submitBtn.style.display = 'inline-block';
+    finishBtn.style.display = 'none';
+    submitBtn.disabled = (userAns.length === 0);
+  } else if (allDone) {
+    submitBtn.style.display = 'none';
+    finishBtn.style.display = 'inline-block';
+  } else {
+    submitBtn.style.display = 'none';
+    finishBtn.style.display = 'none';
+  }
+
+  // Nav buttons
+  document.getElementById('prevBtn').style.visibility = state.current > 0 ? 'visible' : 'hidden';
+  document.getElementById('nextBtn').style.visibility = state.current < total - 1 ? 'visible' : 'hidden';
+}
+
+function toggleOption(letter) {
+  const q = state.questions[state.current];
+  if (state.submitted[state.current]) return;
+  const curr = state.answers[state.current] || [];
+  if (q.type === 'single') {
+    state.answers[state.current] = [letter];
+  } else {
+    state.answers[state.current] = curr.includes(letter)
+      ? curr.filter(l => l !== letter)
+      : [...curr, letter];
+  }
+  renderQuiz();
+}
+
+function submitAnswer() {
+  if (!(state.answers[state.current] || []).length) return;
+  state.submitted[state.current] = true;
+  renderQuiz();
+}
+
+function navigate(dir) {
+  const next = state.current + dir;
+  if (next >= 0 && next < state.questions.length) {
+    state.current = next;
+    renderQuiz();
+  }
+}
+
+function isCorrectAnswer(i) {
+  const q = state.questions[i];
+  const ans = state.answers[i] || [];
+  return ans.length === q.correct.length && q.correct.every(c => ans.includes(c));
+}
+
+// ── Results ──
+function showResults() {
+  const total = state.questions.length;
+  const correct = state.questions.filter((_, i) => isCorrectAnswer(i)).length;
+  const pct = Math.round((correct / total) * 100);
+  const pass = pct >= 60;
+
+  document.getElementById('bigPct').textContent = pct + '%';
+  document.getElementById('bigPct').className = 'big-pct ' + (pass ? 'pass' : 'fail');
+  document.getElementById('resultVerdict').textContent = pass ? 'Pass — good work' : 'Not quite — keep reviewing';
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = total - correct;
+  document.getElementById('statTotal').textContent = total;
+
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  state.questions.forEach((q, i) => {
+    const c = isCorrectAnswer(i);
+    const userAns = state.answers[i] || [];
+    const div = document.createElement('div');
+    div.className = 'review-item ' + (c ? 'r-correct' : 'r-wrong');
+    div.innerHTML = `
+      <div class="review-q">${i + 1}. ${q.question}</div>
+      <div class="review-meta">
+        Your answer: <span class="${c ? 'correct-ans' : 'wrong-ans'}">${userAns.join(', ') || '—'}</span>
+        &nbsp;·&nbsp; Correct: <span class="correct-ans">${q.correct.join(', ')}</span>
+      </div>
+      <div class="review-exp">${q.explanation}</div>`;
+    list.appendChild(div);
+  });
+
+  show('results');
+}
+
+function retakeQuiz() {
+  state.answers = {};
+  state.submitted = {};
+  state.current = 0;
+  renderQuiz();
+  show('quiz');
+}
+
+function resetToUpload() {
+  state.file = null;
+  state.questions = [];
+  state.answers = {};
+  state.submitted = {};
+  state.current = 0;
+  document.getElementById('fileName').textContent = '';
+  document.getElementById('dropZone').querySelector('.drop-title').textContent = 'Drop your file here';
+  document.getElementById('dropZone').classList.remove('has-file');
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('customCount').value = '';
+  fileInput.value = '';
+  hideError();
+  show('upload');
+}
+
+// ── Helpers ──
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('File read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+function parseJSON(raw) {
+  try {
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    return Array.isArray(parsed) ? parsed : parsed.questions || [];
+  } catch { return []; }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+</script>
+</body>
+</html>
